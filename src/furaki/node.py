@@ -138,15 +138,15 @@ class IncrementalTreeNode(Node):
 
     @property
     def left_child(self) -> IncrementalTreeNode:
-        # children = self.tree_.children(self.identifier)
-        if len(self.children) == 2:
-            return self.children[0]
+        children = self.tree_.children(self.identifier)
+        if len(children) == 2:
+            return children[0]
 
     @property
     def right_child(self) -> IncrementalTreeNode:
-        # children = self.tree_.children(self.identifier)
-        if len(self.children) == 2:
-            return self.children[-1]
+        children = self.tree_.children(self.identifier)
+        if len(children) == 2:
+            return children[-1]
 
 
     """Public methods"""
