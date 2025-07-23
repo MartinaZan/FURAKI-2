@@ -72,15 +72,15 @@ class CovarianceTracker(StatsTracker):
             return 0
 
     def getmean(self, as_sum=False):
-        return np.array(self.mean, dtype=np.float128)
+        return np.array(self.mean, dtype=np.longdouble)
     
     def getvar(self, as_sum=False):
-        return np.zeros((self.size,), dtype=np.float128) if self.n_points < 2 \
-            else np.array(self.pvar / (self.n_points - 1), dtype=np.float128)
+        return np.zeros((self.size,), dtype=np.longdouble) if self.n_points < 2 \
+            else np.array(self.pvar / (self.n_points - 1), dtype=np.longdouble)
 
     def getcov(self):
-        return np.zeros((self.size, self.size), dtype=np.float128) if self.n_points < 2 \
-            else np.array(self.pcov / (self.n_points - 1) * self.n_points, dtype=np.float128)
+        return np.zeros((self.size, self.size), dtype=np.longdouble) if self.n_points < 2 \
+            else np.array(self.pcov / (self.n_points - 1) * self.n_points, dtype=np.longdouble)
     
     def getpdf(self, support=None):
         return self.kernel.estimate(support)

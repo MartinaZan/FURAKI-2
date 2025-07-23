@@ -36,5 +36,5 @@ class Density:
         low = np.min(self.x,  axis=0)
         support = np.linspace(low, x, num=100)
         dens = np.exp(self.y)
-        cumulative = np.array([np.trapz(dens, support[:, i]).astype(np.float64) for i in range(d)])
+        cumulative = np.array([np.trapz(dens, support[:, i]) for i in range(d)], dtype=np.float64)
         return cumulative
