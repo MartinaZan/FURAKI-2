@@ -1,6 +1,7 @@
 from ..kernels import Kernel, Bandwidth, Grid
 
 class Epanechnikov(Kernel):
+    """Epanechnikov kernel implementation."""
     def __init__(self, bw: Bandwidth=None, grid: Grid=None):
         super().__init__("epanechnikov", bw, grid)
 

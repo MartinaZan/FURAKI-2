@@ -111,19 +111,32 @@ class IncrementalTree(Tree):
 
 
     def _learn_one(self, X):
+        """
+        This function updates the decision tree with a single instance X.
+        """
+        # If the tree is empty (i.e., there is no root node), create the root node with initial
+        # data and set its label (0).
         if self.get_root() is None:
             self.root = self.create_node(
                 data=self.set_data()
             )
             self.root.label = 0
         
+        # Find the leaf node where the instance X should go.
         found_node = self.root.filter_instance_to_leaf(X)
+
+        # If such a node is found, update it with the instance X. Then, check if the node should be split.
         if found_node is not None:
             found_node._learn_one(X)
+
+            # If a split occurs, create two new child nodes for the split, copying the window from the
+            # parent node. Assign a new label to one of the child nodes. Finally, return the identifier of
+            # the node where the instance X was processed.
             if found_node.split(X):
-                self.num_splits += 1
-                self.split_time = self.count
+                self.num_splits += 1            # Increment the split counter
+                self.split_time = self.count    # Record the split time
                 
+                # Create the left child node: copy parent's window and inherit parent's label
                 n1 = self.create_node(
                     parent=found_node.identifier,
                     data=self.set_data()
@@ -131,12 +144,15 @@ class IncrementalTree(Tree):
                 n1._window = copy.deepcopy(found_node._window)
                 n1.label = found_node.label
 
+                # Create the right child node: copy parent's window and assign a new label
                 n2 = self.create_node(
                     parent=found_node.identifier,
                     data=self.set_data()
                 )
                 n2._window = copy.deepcopy(found_node._window)
                 n2.label = self._get_next_label()
+
+        # Return the identifier of the leaf node where the instance was added
         return found_node.identifier
 
 

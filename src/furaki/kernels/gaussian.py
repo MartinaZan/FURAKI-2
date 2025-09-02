@@ -2,6 +2,7 @@ import numpy as np
 from ..kernels import Kernel, Bandwidth, Grid
 
 class Gaussian(Kernel):
+    """Gaussian kernel implementation."""
     def __init__(self, bw: Bandwidth=None, grid: Grid=None):
         super().__init__("gaussian", bw, grid)
 

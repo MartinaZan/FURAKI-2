@@ -28,9 +28,6 @@ class Subject(ABC):
         pass
 
 
-
-
-
 class Observer(ABC):
     """
     The Observer interface declares the update method, used by subjects.

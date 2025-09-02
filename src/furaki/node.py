@@ -152,28 +152,45 @@ class IncrementalTreeNode(Node):
     """Public methods"""
 
     def filter_instance_to_leaf(self, X):
+        """
+        This function is used recursively to move an instance from the current node (which may be
+        the root or an intermediate node) down to a leaf node.
+        """
+        # If the current node is a leaf, the instance has already reached its final destination.
         if self.is_leaf():
             return self
+        
+        # If the current node is NOT a leaf, the decision rule implemented in _test_attribute
+        # evaluates the instance to decide whether it should be routed to the left or the right
+        # child. Then, it calls itself recursively on the selected child.
         if self._test_attribute(X):
             return self.left_child.filter_instance_to_leaf(X)
-        
         else:
             return self.right_child.filter_instance_to_leaf(X)
         
 
     def split(self, X):
+        """
+        Attempt to split this leaf node based on the current instance X. It returns True if the
+        node was split, and False otherwise.
+        """
+
+        # A node can only be split if it is a leaf and if it has seen at least _min_samples_split 
+        # instances.
         if not self.is_leaf():
             return False
-        if not self._window.can_split: # at least min_samples in node to attempt a split
+        if not self._window.can_split:
             return False
         
+        # Get the current (o = observed) and reference (e = expected) window statistics
         o = self._window.current
         e = self._window.reference
         
-
+        # Check if a split is recommended by the splitter (True = yes, False = no)
         check = self._splitter.check(o, e, self._window.size)
 
         if check:
+            # Prepare numerical and categorical features vector
             if self._num_tracker is not None:
                 n = X[self._num_tracker.feature_names].to_numpy()
             else:
@@ -184,18 +201,23 @@ class IncrementalTreeNode(Node):
             else:
                 d = None
             
+            # Combine numerical and categorical features into a single vector
             x = n if d is None else np.concatenate([n, d], axis=0)
+
+            # Compute probabilities to find the most informative feature
             proba = self._window.current.cdf(x)
             proba /= 1-proba
             fi = np.argmax(proba)
             
+            # Retrieve feature info and store split decision in the splitter
             fii, fna, fn = self.features_all[fi] # get feature name
             self._splitter.split_feature_index = fi
             self._splitter.split_feature_value = fn(fi) if (fi in self._num_tracker.feature_indices or d is None) else list(c.values())[fi]
 
-
+        # Refresh the window after attempting the split
         self._window.refresh(check)
-            
+        
+        # Return whether the split occurred
         return check
 
     def clear(self):
@@ -221,10 +243,20 @@ class IncrementalTreeNode(Node):
     """Private methods"""
 
     def _test_attribute(self, X):
+        """
+        This function evaluates the current instance X at the current node (self) to decide whether 
+        the instance should be routed to the left or right child. It returns 1 if the instance should
+        be routed to the left child, and 0 if it should be routed to the right child.
+        """
+        # If a numerical feature tracker (_num_tracker) exists, extract the numerical values of the
+        # relevant features from X as a NumPy array. Otherwise, set the numerical vector n to None.
         if self._num_tracker is not None:
             n = X[self._num_tracker.feature_names].to_numpy()
         else:
             n = None
+        # If a categorical feature tracker (_cat_tracker) exists, extract the categorical values of
+        # the relevant features from X as a dictionary. Then, vectorize the dictionary, and convert
+        # the results to a NumPy array. Otherwise, set the categorical vector c to None.
         if self._cat_tracker is not None:
             u = []
             c = X[self._cat_tracker.feature_names].to_dict()
@@ -233,15 +265,32 @@ class IncrementalTreeNode(Node):
         else:
             c = None
 
+        # Build the full feature vector x
         x = n if c is None else np.concatenate([n, c], axis=0)
         
+        # Retrieve the "frozen" left and right node parameters (mean m and covariance c) from
+        # self._window.
         m1, c1 = self._window.frozen_left[0], self._window.frozen_left[1]
         m2, c2 = self._window.frozen_right[0], self._window.frozen_right[1]
+
+        # Compute the Mahalanobis distance from x to the left node (go_left) and to the right node
+        # (go_right).
+        # In principle, (x - m)ᵀ * C * (x - m) should always be ≥ 0 since the covariance matrix C is
+        # positive semidefinite. max(0, …) is used to deal with potential floating-point rounding
+        # errors.
         go_left = np.sqrt(max(0, (x-m1) @ c1 @ (x-m1)))
         go_right = np.sqrt(max(0, (x-m2) @ c2 @ (x-m2)))
         
+        # Return the index of the smaller distance.
         return np.argmin([go_right, go_left])
 
     def _learn_one(self, X) -> None:
+        """
+        Update the current node with a single instance X.
+        """
+        # Increment the count of instances in this node
         self.n_points += 1
+
+        # Update internal statistics with the new instance X (_window tracks numerical and
+        # categorical features to support future splits or predictions)
         self._window.learn_one(X)

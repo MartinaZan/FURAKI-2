@@ -4,18 +4,23 @@ from typing import List
 from ..base import Subject, Observer
 
 class StatsTracker(Subject):
-
     """Class that computes and stores summaries of data both categorical or numerical"""
+
     def __init__(self, observed_features=None) -> None:
+        # List of indices of the features this tracker is responsible for
         self.feature_indices = []
         self.feature_names = []
-        self.n_points = 0
+        self.n_points = 0           # Number of points observed
+
+        # Initialize indices and names from the observed feature list
         for i, f in observed_features:
             self.feature_indices.append(i)
             self.feature_names.append(f)
+
+        # Number of features being tracked
         self.n_features = len(observed_features)
-        self.size=None
-        self.kernel = None
+        self.size = None    # Window size
+        self.kernel = None  # Placeholder for a kernel object
 
         self._state: float = None
         self._observers: List[Observer] = []

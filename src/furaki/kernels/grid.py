@@ -7,6 +7,7 @@ class Interval:
         self.sup = b
 
     def update(self, x):
+        """Update the interval to include a new value x."""
         if self.inf is None:
             self.inf = x
         else:
@@ -18,6 +19,10 @@ class Interval:
             self.sup = max(x, self.sup)
 
 class Grid:
+    """
+    Tracks min/max intervals (portions) for multiple features and allows building a grid for
+    evaluation or kernel purposes.
+    """
     def __init__(self):
         self.size = 0
         self.length = 0

@@ -7,6 +7,7 @@ from ..base import Subject
 from ..stats.base import StatsTracker
 
 class Bandwidth:
+    """Used to calculate the bandwidth for kernels."""
 
     @staticmethod
     def create(name):
@@ -32,6 +33,8 @@ class Bandwidth:
         return self.value
 
 class Scott(Bandwidth):
+    """Scott: uses Scott's rule (1.059 * std * n^(-1/(4+d)))"""
+
     def __init__(self) -> None:
         super().__init__("scott")
 
@@ -47,6 +50,8 @@ class Scott(Bandwidth):
         self.value = value
 
 class Silverman(Bandwidth):
+    """Silverman: uses Silverman's rule (approximation using std and IQR)"""
+
     def __init__(self) -> None:
         super().__init__("silverman")
 
@@ -69,6 +74,7 @@ class Silverman(Bandwidth):
         self.value = value
 
 class Variance(Bandwidth):
+    """Variance: uses the variance of each feature as bandwidth."""
     def __init__(self) -> None:
         super().__init__("variance")
 
